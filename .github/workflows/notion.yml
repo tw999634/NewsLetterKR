@@ -1,0 +1,58 @@
+name: Generate and Save to Notion
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check required secrets
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PARENT_PAGE_ID: ${{ secrets.NOTION_PARENT_PAGE_ID }}
+        run: |
+          test -n "$OPENAI_API_KEY" || { echo 'Missing OPENAI_API_KEY secret'; exit 1; }
+          test -n "$NOTION_TOKEN" || { echo 'Missing NOTION_TOKEN secret'; exit 1; }
+          test -n "$NOTION_PARENT_PAGE_ID" || { echo 'Missing NOTION_PARENT_PAGE_ID secret'; exit 1; }
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Generate Korean GitHub Trending report
+        id: report
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          report_path="$(python -m newsletter.report_flow github --count 5)"
+          test -f "$report_path"
+          echo "path=$report_path" >> "$GITHUB_OUTPUT"
+
+      - name: Publish Korean report to Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PARENT_PAGE_ID_KO: ${{ secrets.NOTION_PARENT_PAGE_ID }}
+          REPORT_PATH: ${{ steps.report.outputs.path }}
+        run: python -m newsletter.notion_publish "$REPORT_PATH" --language ko --publish
+
+      - name: Upload Markdown report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: notion-korean-report-${{ github.run_id }}
+          path: reports/**/*.md
+          if-no-files-found: ignore
