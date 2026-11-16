@@ -1,0 +1,46 @@
+name: Generate newsletter research drafts
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Requested schedule: Monday 09:00 JST. The editorial cutoff in docs is Saturday 09:00 KST.
+    - cron: '0 9 * * 1'
+      timezone: 'Asia/Tokyo'
+
+permissions:
+  contents: read
+
+jobs:
+  generate-reports:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Generate GitHub Trending draft
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -m newsletter.report_flow github --count 5
+
+      - name: Generate GeekNews draft
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python -m newsletter.report_flow geeknews --count 5
+
+      - name: Upload Markdown reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: korean-research-drafts-${{ github.run_id }}
+          path: reports/**/*.md
+          if-no-files-found: warn
