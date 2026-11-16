@@ -67,7 +67,7 @@ python -m newsletter.notion_publish reports/<작업 ID>/<파일>.md --language k
 python -m newsletter.notion_publish reports/<작업 ID>/<파일>.md --language ja --title "承認済みの日本語タイトル" --publish
 ```
 
-실제 발행에는 `NOTION_API_KEY`와 해당 언어의 `NOTION_PARENT_PAGE_ID_KO` 또는 `NOTION_PARENT_PAGE_ID_JA`가 필요하다. `--parent`로 비공개 시험 페이지 ID를 지정할 수도 있다. 성공하면 생성 페이지의 ID와 URL을 출력한다. 발행 요청 중 연결이 끊기면 의도치 않은 추가 발행을 피하도록 자동 재시도하지 않으므로 상위 페이지를 확인한 뒤 다시 실행한다.
+실제 발행에는 `NOTION_API_KEY`와 해당 언어의 `NOTION_PARENT_PAGE_ID_KO` 또는 `NOTION_PARENT_PAGE_ID_JA`가 필요하다. 로컬에서는 `NOTION_TOKEN`을 토큰의 별칭으로, 한국어 발행에는 `NOTION_PARENT_PAGE_ID`를 부모 ID의 별칭으로 사용할 수 있다. `.env` 값에서 `=` 앞뒤 공백도 허용한다. `--parent`로 비공개 시험 페이지 ID를 지정할 수도 있다. 성공하면 생성 페이지의 ID와 URL을 출력한다. 발행 요청 중 연결이 끊기면 의도치 않은 추가 발행을 피하도록 자동 재시도하지 않으므로 상위 페이지를 확인한 뒤 다시 실행한다.
 
 ## GitHub Actions에서 한국어 보고서 발행
 

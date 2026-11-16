@@ -2,12 +2,12 @@
 
 > 2026-11-16 기준. 한국어와 일본어 뉴스레터는 각각 별도 부모 페이지 아래에 작성한다. 한국어 부모는 [【뉴스레터】GitHub Trending](https://app.notion.com/p/4197cfd0ca688017a33bc594146e02d4), 일본어 부모는 [【ニュースレター】GitHub Trending](https://app.notion.com/p/4197cfd0ca6880168268e04e28c8c1e6)이다. 각 언어·호당 하위 페이지 하나를 작성한다.
 
-Markdown 파일을 하위 페이지로 작성하는 `newsletter.notion_publish` 모듈은 추가됐다. 현재 로컬·프로젝트 환경에 `NOTION_API_KEY`가 없어 실제 Notion 쓰기 검증은 아직 수행하지 않았다. GitHub Actions에는 발행 단계를 연결하지 않았다.
+Markdown 파일을 하위 페이지로 작성하는 `newsletter.notion_publish` 모듈은 추가됐다. 2026-11-16 로컬 시험에서 `NewsLetterKR` 연결을 한국어 부모 페이지에 추가한 뒤, 기존 보고서로 [한국어 하위 페이지](https://app.notion.com/p/GitHub-Trending-5-2026-11-16-41a7cfd0ca68818ea652c69168c62bdf)를 작성했다. 부모 ID·제목·기사 제목 5개·표 블록을 API로 확인했다. GitHub Actions의 원격 실행과 일본어 발행은 아직 검증되지 않았다.
 
 ## 구현·검증 계획
 
 1. **완료:** Markdown 파일 하나를 지정한 언어별 부모 페이지 아래 한 페이지로 작성하는 CLI, 명시적 `--publish` 스위치와 페이지 ID·URL 출력. 현재 Notion API의 `markdown_version: v2` 형식을 사용한다. 같은 제목이어도 재실행하면 새 페이지를 만든다.
-2. **관리자 설정 후:** 팀 소유 Notion 연결과 비공개 시험 부모 페이지를 준비하고, 토큰을 로컬 비밀 환경 또는 GitHub Actions Secret `NOTION_API_KEY`에 등록한다. 비공개 시험 페이지에서 실제 쓰기와 링크·표 표시를 확인한다.
+2. **관리자 설정 후:** `NewsLetterKR` 연결을 한국어·일본어 부모 페이지에 추가하고 `Read content`·`Insert content` 권한을 확인한다. 비공개 시험 부모 페이지를 준비하고 실제 쓰기와 링크·표 표시를 확인한다. Actions에서는 Secret `NOTION_TOKEN`과 `NOTION_PARENT_PAGE_ID`를 사용한다.
 3. **공개 정책 확정 후:** 한국어 완성 보고서를 한국어 부모에 연결하고, 동일 내용을 일본어로 번역한 원고를 일본어 부모에 연결한다. 제목 규칙·발행 시각·장애 알림을 결정한 뒤 Actions 발행 단계를 추가한다.
 4. **운영 검증:** 승인된 시범호를 언어별 부모 페이지에 발행하고 ID·URL·내용·공개 범위를 확인한다. 쓰기 응답이 불명확하면 자동 재시도 전에 부모 페이지를 조회한다.
 
@@ -15,12 +15,12 @@ Markdown 파일을 하위 페이지로 작성하는 `newsletter.notion_publish` 
 
 ## 이번에 관리자에게 우선 확인할 정보
 
-- 사용할 팀 소유 **Notion 내부 연결 이름·관리자**, 그리고 연결에 `Read content`·`Insert content` 권한을 주고 지정 부모 페이지와 비공개 시험 부모 페이지에 추가할 수 있는지.
-- 토큰을 **GitHub Actions Secret `NOTION_API_KEY`에 관리자가 직접 등록**할 수 있는지. 토큰 값은 채팅이나 문서로 받지 않는다. 시험용 로컬 실행이 필요하면 안전한 비밀값 전달 경로도 지정해 달라.
+- `NewsLetterKR` 연결의 한국어 부모 페이지 접근과 쓰기는 확인됐다. 일본어 부모 페이지 및 비공개 시험 부모 페이지에도 같은 연결을 추가할지 확인한다.
+- 토큰은 GitHub Actions Secret `NOTION_TOKEN`에 등록한다. 토큰 값은 채팅이나 문서로 받지 않는다. `NOTION_PARENT_PAGE_ID`에는 현재 한국어 부모 페이지 ID를 등록한다.
 - 한국어·일본어 부모 페이지와 새 하위 페이지의 **현재 공개 범위**, 비공개 시험 부모 페이지 ID, 발행 승인자와 승인된 원고를 확인할 위치.
 - 한국어 보고서 완성본을 일본어로 그대로 번역할 때의 제목 규칙과 게시 시각. 재실행 시 새 페이지 추가는 확정됐다.
 
-연결된 ChatGPT Notion 도구로 두 상위 페이지와 기존 [한국어](https://app.notion.com/p/4127cfd0ca6880479087c01740cf5465)·[일본어](https://app.notion.com/p/4127cfd0ca6880f99b8fc49023159c74) 하위 페이지를 읽었다. 이는 **ChatGPT 연결의 읽기 성공**만 뜻한다. 배포할 Python 프로그램의 Notion API 자격 증명, 하위 페이지 생성·수정 권한, 상위 페이지의 공개 범위는 아직 확인되지 않았다.
+연결된 ChatGPT Notion 도구로 두 상위 페이지와 기존 [한국어](https://app.notion.com/p/4127cfd0ca6880479087c01740cf5465)·[일본어](https://app.notion.com/p/4127cfd0ca6880f99b8fc49023159c74) 하위 페이지를 읽었다. 이후 로컬 `NewsLetterKR` 봇 토큰으로 한국어 부모 페이지를 조회하고 실제 하위 페이지 생성까지 확인했다. 일본어 부모 페이지의 쓰기 권한과 두 부모의 외부 공개 범위는 아직 확인되지 않았다.
 
 ## 관리자에게 요청할 설정과 답변
 
@@ -39,7 +39,7 @@ Markdown 파일을 하위 페이지로 작성하는 `newsletter.notion_publish` 
 - **페이지 단위:** 각 언어·호당 하위 페이지 하나다.
 - **집계 기준:** 토요일 09:00 KST다. 실제 공개 시각은 아직 미정이다.
 - **독자·산출물:** 한국어와 일본어 뉴스레터를 각각 작성한다. AI 뉴스는 호당 7건으로 계획한다.
-- **미확인:** 배포용 내부 연결, API 권한과 토큰 저장, 두 부모 페이지의 공개 상태, 비공개 시험 위치, 발행 시각·제목 규칙.
+- **미확인:** `NewsLetterKR` 연결의 일본어 부모 페이지 접근 권한, Actions Secret 등록 여부, 두 부모 페이지의 공개 상태, 발행 시각·제목 규칙.
 
 ## 연결 확인 절차
 

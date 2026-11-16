@@ -68,6 +68,11 @@ class NotionClient:
                     continue
                 code = exc.code
                 exc.close()
+                if code == 404 and path == "/pages":
+                    raise NotionPublishError(
+                        "Notion 상위 페이지를 찾을 수 없거나 이 연결에 공유되지 않았습니다 (HTTP 404). "
+                        "상위 페이지의 Connections에 해당 연결을 추가했는지 확인하세요."
+                    ) from exc
                 raise NotionPublishError(f"Notion API 요청 실패 (HTTP {code}, {method} {path.split('?')[0]}).") from exc
             except urllib.error.URLError as exc:
                 raise NotionPublishError(f"Notion API 연결 실패 ({method}). 작성 요청이었다면 상위 페이지를 확인한 뒤 재시도하세요.") from exc
@@ -109,9 +114,13 @@ def main() -> None:
             print(f"미리보기: {title} ({len(markdown)}자); --publish가 있어야 작성합니다.")
             return
         load_local_env()
-        parent_id = _page_id(args.parent or os.getenv(f"NOTION_PARENT_PAGE_ID_{args.language.upper()}", ""))
-        result = NotionClient(os.getenv("NOTION_API_KEY", "")).create_child(parent_id, title, markdown)
-        print(json.dumps(result, ensure_ascii=False))
+        parent_id = args.parent or os.getenv(f"NOTION_PARENT_PAGE_ID_{args.language.upper()}", "")
+        if args.language == "ko" and not parent_id:
+            parent_id = os.getenv("NOTION_PARENT_PAGE_ID", "")
+        parent_id = _page_id(parent_id)
+        token = os.getenv("NOTION_API_KEY") or os.getenv("NOTION_TOKEN", "")
+        result = NotionClient(token).create_child(parent_id, title, markdown)
+        print(json.dumps(result, ensure_ascii=True))
     except (OSError, ValueError, NotionPublishError) as exc:
         parser.exit(1, f"오류: {exc}\n")
 
